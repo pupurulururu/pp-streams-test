@@ -1,10 +1,8 @@
 package com.pp.rrr.ppstreamtest;
 
 import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.*;
 import org.apache.kafka.streams.kstream.*;
-import org.apache.kafka.streams.state.KeyValueStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -30,7 +28,7 @@ public class PpStreamTestApplication implements ApplicationRunner {
 
         Properties properties = getProperties();
 
-        Topology topology = simple_table_tostream_print2();
+        Topology topology = simple_table_tostream_print3();
 
         KafkaStreams streams = new KafkaStreams(topology, properties);
 
@@ -43,6 +41,7 @@ public class PpStreamTestApplication implements ApplicationRunner {
         properties.put(StreamsConfig.APPLICATION_ID_CONFIG, appConfig.getApplicationId());
         properties.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass());
         properties.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass());
+        properties.put(StreamsConfig.STATE_DIR_CONFIG, appConfig.getStateDir());
         return properties;
     }
 
@@ -67,7 +66,7 @@ public class PpStreamTestApplication implements ApplicationRunner {
         StreamsBuilder builder = new StreamsBuilder();
 
         KStream<String, String> stream = builder.stream(appConfig.getKafkaInputTopic(), Consumed.with(Serdes.String(), Serdes.String())).map(
-                (sid,uid) -> KeyValue.pair(sid, StringUtils.isEmpty(uid) ? "unknown_"+sid : uid));
+                (sid, uid) -> KeyValue.pair(sid, StringUtils.isEmpty(uid) ? "unknown_" + sid : uid));
 
         stream.print(Printed.toSysOut());
         KTable<String, String> stringStringKTable = stream.toTable();
@@ -133,7 +132,6 @@ public class PpStreamTestApplication implements ApplicationRunner {
 
         return builder.build();
     }
-
 
 
 }

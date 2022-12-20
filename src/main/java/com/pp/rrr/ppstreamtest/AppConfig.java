@@ -15,6 +15,9 @@ public class AppConfig {
     @Value("${source.topic:}")
     private String kafkaInputTopic;
 
+    @Value("${state.dir}")
+    private String stateDir;
+
     public void setKafkaBootStrapServers(String kafkaBootStrapServers) {
         this.kafkaBootStrapServers = kafkaBootStrapServers;
     }
@@ -37,5 +40,13 @@ public class AppConfig {
 
     public String getKafkaInputTopic() {
         return kafkaInputTopic;
+    }
+
+    public String getStateDir() {
+        return stateDir;
+    }
+
+    public void setStateDir(String stateDir) {
+        this.stateDir = stateDir;
     }
 }
