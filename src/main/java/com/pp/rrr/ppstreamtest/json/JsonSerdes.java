@@ -1,3 +1,4 @@
+/*
 package com.pp.rrr.ppstreamtest.json;
 
 import com.magicalpipelines.HighScores;
@@ -40,3 +41,4 @@ public class JsonSerdes {
     return Serdes.serdeFrom(serializer, deserializer);
   }
 }
+*/
