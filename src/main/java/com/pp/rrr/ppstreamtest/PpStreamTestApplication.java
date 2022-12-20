@@ -1,12 +1,8 @@
 package com.pp.rrr.ppstreamtest;
 
-import com.pp.rrr.ppstreamtest.model.Event;
-import com.pp.rrr.ppstreamtest.serde.EventSerdes;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.*;
 import org.apache.kafka.streams.kstream.*;
-import org.apache.kafka.streams.processor.StateStore;
-import org.apache.kafka.streams.state.StoreBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -14,7 +10,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.util.StringUtils;
 
-import java.util.Map;
 import java.util.Properties;
 
 @SpringBootApplication
@@ -33,7 +28,7 @@ public class PpStreamTestApplication implements ApplicationRunner {
 
         Properties properties = getProperties();
 
-        Topology topology = stream_print2();
+        Topology topology = simple_table_tostream_print2();
 
         KafkaStreams streams = new KafkaStreams(topology, properties);
 
@@ -64,6 +59,7 @@ public class PpStreamTestApplication implements ApplicationRunner {
         return builder.build();
     }
 
+
     //stream -> table ->steam.print()랑 똑같다
     public Topology simple_table_tostream_print() {
 
@@ -75,11 +71,24 @@ public class PpStreamTestApplication implements ApplicationRunner {
     }
 
 
+    //똑같음 ㅡㅡ
+    public Topology simple_table_tostream_print2() {
+
+        StreamsBuilder builder = new StreamsBuilder();
+
+        KTable<String, String> table = builder.table(appConfig.getKafkaInputTopic(),
+                Materialized.with(Serdes.String(), Serdes.String()));
+        table.toStream().print(Printed.toSysOut());
+
+        return builder.build();
+    }
+
+
     /*
     [KTABLE-TOSTREAM-0000000007]: s1, 4
     [KTABLE-TOSTREAM-0000000007]: s2, 3
      */
-    public Topology stream_print2() {
+    public Topology stream_group_key() {
 
         StreamsBuilder builder = new StreamsBuilder();
 
