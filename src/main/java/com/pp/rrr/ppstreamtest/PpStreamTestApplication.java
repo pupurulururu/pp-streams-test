@@ -3,10 +3,7 @@ package com.pp.rrr.ppstreamtest;
 import com.pp.rrr.ppstreamtest.model.Event;
 import com.pp.rrr.ppstreamtest.serde.EventSerdes;
 import org.apache.kafka.common.serialization.Serdes;
-import org.apache.kafka.streams.KafkaStreams;
-import org.apache.kafka.streams.StreamsBuilder;
-import org.apache.kafka.streams.StreamsConfig;
-import org.apache.kafka.streams.Topology;
+import org.apache.kafka.streams.*;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KTable;
@@ -16,6 +13,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.util.StringUtils;
 
 import java.util.Properties;
 
@@ -55,8 +53,12 @@ public class PpStreamTestApplication implements ApplicationRunner {
 
         StreamsBuilder builder = new StreamsBuilder();
 
-        builder.stream(appConfig.getKafkaInputTopic(), Consumed.with(Serdes.String(), Serdes.String()))
-                .print(Printed.toSysOut());
+        KStream<String, String> stream = builder.stream(appConfig.getKafkaInputTopic(), Consumed.with(Serdes.String(), Serdes.String())).map(
+                (sid,uid) -> KeyValue.pair(sid, StringUtils.isEmpty(uid) ? "unknown_"+sid : uid));
+
+        stream.print(Printed.toSysOut());
+        stream.toTable().toStream().print(Printed.toSysOut());
+
 
         return builder.build();
     }
