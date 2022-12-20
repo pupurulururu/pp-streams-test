@@ -1,8 +1,10 @@
 package com.pp.rrr.ppstreamtest;
 
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.*;
 import org.apache.kafka.streams.kstream.*;
+import org.apache.kafka.streams.state.KeyValueStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -44,6 +46,22 @@ public class PpStreamTestApplication implements ApplicationRunner {
         return properties;
     }
 
+    /*
+    [KSTREAM-MAP-0000000001]: s1, unknown_s1
+    [KSTREAM-MAP-0000000001]: s1, u1
+    [KSTREAM-MAP-0000000001]: s1, unknown_s1
+    [KSTREAM-MAP-0000000001]: s2, u1
+    [KSTREAM-MAP-0000000001]: s1, u2
+    [KSTREAM-MAP-0000000001]: s2, u1
+    [KSTREAM-MAP-0000000001]: s2, u1
+    [KTABLE-TOSTREAM-0000000008]: s1, unknown_s1
+    [KTABLE-TOSTREAM-0000000008]: s1, u1
+    [KTABLE-TOSTREAM-0000000008]: s1, unknown_s1
+    [KTABLE-TOSTREAM-0000000008]: s2, u1
+    [KTABLE-TOSTREAM-0000000008]: s1, u2
+    [KTABLE-TOSTREAM-0000000008]: s2, u1
+    [KTABLE-TOSTREAM-0000000008]: s2, u1
+     */
     public Topology stream_print() {
 
         StreamsBuilder builder = new StreamsBuilder();
@@ -78,6 +96,22 @@ public class PpStreamTestApplication implements ApplicationRunner {
 
         KTable<String, String> table = builder.table(appConfig.getKafkaInputTopic(),
                 Materialized.with(Serdes.String(), Serdes.String()));
+        table.toStream().print(Printed.toSysOut());
+
+        return builder.build();
+    }
+
+
+    /*
+    [KTABLE-TOSTREAM-0000000002]: s1, u2
+    [KTABLE-TOSTREAM-0000000002]: s2, u1
+     */
+    public Topology simple_table_tostream_print3() {
+
+        StreamsBuilder builder = new StreamsBuilder();
+
+        KTable<String, String> table = builder.table(appConfig.getKafkaInputTopic(),
+                Materialized.as("ktable-store"));
         table.toStream().print(Printed.toSysOut());
 
         return builder.build();
