@@ -10,7 +10,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.util.StringUtils;
 
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 @SpringBootApplication
 public class PpStreamTestApplication implements ApplicationRunner {
@@ -112,6 +114,27 @@ public class PpStreamTestApplication implements ApplicationRunner {
         KTable<String, String> table = builder.table(appConfig.getKafkaInputTopic(),
                 Materialized.as("ktable-store"));
         table.toStream().print(Printed.toSysOut());
+
+        return builder.build();
+    }
+
+    public Topology aa() {
+        StreamsBuilder builder = new StreamsBuilder();
+
+        Initializer<HashSet> initializer = () -> new HashSet();
+        Aggregator<String, String, HashSet> aggregator = new Aggregator<>() {
+
+            @Override
+            public HashSet apply(String key, String value, HashSet aggregate) {
+                aggregate.add(key);
+                return aggregate;
+            }
+        };
+        builder.stream(appConfig.getKafkaInputTopic(), Consumed.with(Serdes.String(), Serdes.String()))
+                .map((sid, uid) -> KeyValue.pair(uid, sid))
+                .groupByKey()
+                .aggregate(initializer, aggregator, Materialized.as("hello"))
+                .toStream().print(Printed.toSysOut());
 
         return builder.build();
     }
